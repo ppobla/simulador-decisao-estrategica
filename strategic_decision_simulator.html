@@ -1,0 +1,1929 @@
+              <div className="mb-6 bg-gray-50 p-4 rounded-lg border border-gray-200">
+                <h4 className="font-medium mb-3 text-gray-700">Categorias Especializadas:</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 text-sm">
+                  <div><strong>📋 Continuidade de Apoio</strong> - Decisões sobre manutenção de operações</div>
+                  <div><strong>🔗 Coordenação de Células</strong> - Integração entre diferentes unidades operacionais</div>
+                  <div><strong>🛡️ Desinformação</strong> - Gestão de campanhas de informação falsa</div>
+                  <div><strong>🔍 Detecção de Deepfake</strong> - Identificação de conteúdo manipulado</div>
+                  <div><strong>🤝 Engajamento Civil</strong> - Interação com populações pós-conflito</div>
+                  <div><strong>🏖️ Engajamento Costeiro</strong> - Trabalho com comunidades marítimas</div>
+                  <div><strong>📢 Mensagens de Dissuasão</strong> - Desenvolvimento de comunicação estratégica</div>
+                  <div><strong>🏗️ Priorização de Infraestrutura</strong> - Gestão de recursos críticos</div>
+                  <div><strong>🔄 Transição de Autoridades</strong> - Transferência para governo civil</div>
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {simulationTypes.map((type) => {
+                  const isLocked = difficultyLevel !== 'advanced' && type.difficulty === 'high';
+                  
+                  return (
+                    <button
+                      key={type.id}
+                      onClick={() => !isLocked && startNewSimulation(type.id)}
+                      disabled={isLocked}
+                      className={`relative p-4 rounded-lg border-2 transition-all text-left hover:shadow-lg transform hover:scale-105 ${
+                        isLocked 
+                          ? 'border-gray-200 bg-gray-50 opacity-50 cursor-not-allowed'
+                          : 'border-gray-200 hover:border-blue-300 bg-white hover:bg-blue-50'
+                      }`}
+                      style={{ borderLeftColor: type.color, borderLeftWidth: '4px' }}
+                    >
+                      {isLocked && (
+                        <div className="absolute top-2 right-2 bg-gray-400 text-white text-xs px-2 py-1 rounded">
+                          Bloqueado
+                        </div>
+                      )}
+                      
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-2xl">{type.emoji}</span>
+                        <div className={`px-2 py-1 rounded text-xs font-medium ${
+                          type.difficulty === 'high' ? 'bg-red-100 text-red-800' :
+                          type.difficulty === 'medium' ? 'bg-yellow-100 text-yellow-800' :
+                          'bg-green-100 text-green-800'
+                        }`}>
+                          {type.difficulty === 'high' ? 'Difícil' :
+                           type.difficulty === 'medium' ? 'Médio' : 'Fácil'}
+                        </div>
+                      </div>
+                      
+                      <div className="font-semibold text-gray-800 mb-2">{type.name}</div>
+                      <div className="text-sm text-gray-600 leading-relaxed">{type.description}</div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Active Scenario */}
+            {gameState.currentScenario && (
+              <div className="bg-white border-2 border-blue-200 rounded-lg p-6 shadow-lg">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-2xl font-bold text-gray-800 flex items-center">
+                    <Target className="mr-2 text-blue-600" /> {gameState.currentScenario.title}
+                  </h2>
+                  {timeRemaining > 0 && (
+                    <div className={`flex items-center px-3 py-1 rounded-lg font-medium ${
+                      timeRemaining < 60 ? 'text-red-600 bg-red-50' : 'text-orange-600 bg-orange-50'
+                    }`}>
+                      <Clock className="w-4 h-4 mr-1" />
+                      <span className="text-sm">{formatTime(timeRemaining)}</span>
+                    </div>
+                  )}
+                </div>
+
+                <div className="mb-6">
+                  <h3 className="text-lg font-semibold mb-2 text-gray-800">Situação</h3>
+                  <p className="text-gray-700 mb-4 leading-relaxed">{gameState.currentScenario.description}</p>
+                  <div className="bg-blue-50 border-l-4 border-blue-400 p-4 rounded">
+                    <h4 className="font-semibold text-blue-800 mb-2">Contexto Detalhado</h4>
+                    <p className="text-blue-700 leading-relaxed">{gameState.currentScenario.context}</p>
+                  </div>
+                </div>
+
+                {/* Stakeholders */}
+                <div className="mb-6">
+                  <h3 className="text-lg font-semibold mb-3 flex items-center text-gray-800">
+                    <Users className="mr-2" /> Partes Interessadas
+                  </h3>
+                  <div className="flex flex-wrap gap-2">
+                    {gameState.currentScenario.stakeholders.map((stakeholder, index) => (
+                      <span 
+                        key={index} 
+                        className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm font-medium"
+                      >
+                        {stakeholder}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Collaborative Discussion */}
+                {gameMode === 'collaborative' && collaborativeSession.isActive && (
+                  <div className="mb-6">
+                    <h3 className="text-lg font-semibold mb-3 flex items-center text-gray-800">
+                      <MessageCircle className="mr-2" /> Discussão da Equipe
+                    </h3>
+                    <div className="bg-gray-50 p-4 rounded-lg max-h-40 overflow-y-auto border">
+                      {collaborativeSession.messages.map(msg => (
+                        <div key={msg.id} className="mb-2">
+                          <div className="flex items-start space-x-2">
+                            <span className={`font-medium text-sm ${
+                              msg.isSystem ? 'text-blue-600' : 'text-gray-800'
+                            }`}>
+                              {msg.user}:
+                            </span>
+                            <span className="text-sm text-gray-700 flex-1">{msg.message}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    
+                    {!collaborativeSession.isActive && (
+                      <button
+                        onClick={() => collaborativeSystem.createSession(gameState.currentScenario.id)}
+                        className="mt-3 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm transition-colors"
+                      >
+                        Iniciar Discussão em Equipe
+                      </button>
+                    )}
+                  </div>
+                )}
+
+                {/* Decision Options */}
+                <div className="mb-6">
+                  <h3 className="text-lg font-semibold mb-4 text-gray-800">Opções Estratégicas</h3>
+                  <div className="space-y-4">
+                    {gameState.currentScenario.options.map((option, index) => (
+                      <div
+                        key={option.id}
+                        className={`border-2 rounded-lg p-4 cursor-pointer transition-all hover:shadow-md ${
+                          selectedDecision?.id === option.id
+                            ? 'border-blue-500 bg-blue-50 shadow-lg'
+                            : 'border-gray-200 hover:border-gray-300 bg-white'
+                        }`}
+                        onClick={() => executeDecision(option)}
+                      >
+                        <div className="flex items-start justify-between mb-3">
+                          <div className="flex-1">
+                            <h4 className="font-semibold text-gray-800 mb-2 flex items-center">
+                              <span className="bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm mr-2">
+                                {index + 1}
+                              </span>
+                              {option.text}
+                            </h4>
+                          </div>
+                          
+                          {/* Collaborative Voting */}
+                          {gameMode === 'collaborative' && collaborativeSession.isActive && (
+                            <div className="ml-4">
+                              <div className="text-xs text-gray-500 mb-1">Votos da equipe:</div>
+                              <div className="flex space-x-1">
+                                {collaborativeSession.participants.map(p => (
+                                  <div 
+                                    key={p.id} 
+                                    className={`w-3 h-3 rounded-full border ${
+                                      p.vote === option.id ? 'bg-green-500 border-green-500' : 'bg-gray-200 border-gray-300'
+                                    }`} 
+                                    title={`${p.name} - ${p.role}`}
+                                  />
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                        
+                        {/* Consequences Grid */}
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm mb-4">
+                          <div className="bg-green-50 p-3 rounded border-l-4 border-green-400">
+                            <span className="font-medium text-green-700 flex items-center mb-1">
+                              <Clock className="w-3 h-3 mr-1" /> Curto prazo:
+                            </span>
+                            <p className="text-green-600">{option.consequences.short}</p>
+                          </div>
+                          <div className="bg-yellow-50 p-3 rounded border-l-4 border-yellow-400">
+                            <span className="font-medium text-yellow-700 flex items-center mb-1">
+                              <Clock className="w-3 h-3 mr-1" /> Médio prazo:
+                            </span>
+                            <p className="text-yellow-600">{option.consequences.medium}</p>
+                          </div>
+                          <div className="bg-blue-50 p-3 rounded border-l-4 border-blue-400">
+                            <span className="font-medium text-blue-700 flex items-center mb-1">
+                              <Clock className="w-3 h-3 mr-1" /> Longo prazo:
+                            </span>
+                            <p className="text-blue-600">{option.consequences.long}</p>
+                          </div>
+                        </div>
+
+                        {/* Score Preview */}
+                        {selectedDecision?.id === option.id && (
+                          <div className="bg-gray-50 p-4 rounded-lg border">
+                            <h5 className="font-semibold mb-3 text-gray-800">Impacto Previsto por Área:</h5>
+                            <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
+                              {Object.entries(option.scores).map(([area, score]) => (
+                                <div key={area} className="text-center">
+                                  <div className="text-xs font-medium capitalize mb-1 text-gray-600">{area}</div>
+                                  <div className={`text-lg font-bold mb-1 ${
+                                    score >= 70 ? 'text-green-600' : 
+                                    score >= 50 ? 'text-yellow-600' : 'text-red-600'
+                                  }`}>
+                                    {score}%
+                                  </div>
+                                  <div className="w-full bg-gray-200 rounded-full h-1">
+                                    <div 
+                                      className={`h-1 rounded-full transition-all duration-500 ${
+                                        score >= 70 ? 'bg-green-500' : 
+                                        score >= 50 ? 'bg-yellow-500' : 'bg-red-500'
+                                      }`}
+                                      style={{ width: `${score}%` }}
+                                    />
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Loading State */}
+                {gameState.isLoading && (
+                  <div className="text-center py-8">
+                    <div className="inline-flex items-center px-6 py-3 bg-blue-50 rounded-lg">
+                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mr-3"></div>
+                      <span className="text-blue-700 font-medium">Processando decisão com IA...</span>
+                    </div>
+                  </div>
+                )}
+
+                {/* Advanced Analysis */}
+                <AdvancedAnalysis 
+                  results={gameState.currentResults} 
+                  userHistory={gameState.decisions}
+                  aiInsights={gameState.aiInsights}
+                />
+
+                {/* Next Scenario in Campaign */}
+                {gameMode === 'campaign' && gameState.currentResults && (
+                  <div className="mt-6 p-4 bg-gradient-to-r from-green-50 to-blue-50 rounded-lg border border-green-200">
+                    <h4 className="font-semibold mb-2 flex items-center text-gray-800">
+                      <ChevronRight className="mr-2" /> Próximo Cenário da Campanha
+                    </h4>
+                    <p className="text-sm text-gray-700 mb-3">
+                      Suas decisões influenciarão o próximo cenário da campanha. A IA criará uma situação adaptada ao seu desempenho.
+                    </p>
+                    <button 
+                      onClick={() => startNewSimulation('adaptive')}
+                      className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all transform hover:scale-105"
+                    >
+                      Continuar Campanha Adaptativa
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Start Button if no scenario */}
+            {!gameState.currentScenario && (
+              <div className="text-center py-12">
+                <Target className="mx-auto h-16 w-16 text-gray-400 mb-4" />
+                <h3 className="text-xl font-semibold text-gray-700 mb-2">Pronto para começar?</h3>
+                <p className="text-gray-500 mb-6">Escolha um tipo de simulação acima para iniciar seu treinamento estratégico.</p>
+                <button
+                  onClick={() => setShowTutorial(true)}
+                  className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center mx-auto"
+                >
+                  <Play className="mr-2 w-5 h-5" />
+                  Ver Tutorial Primeiro
+                </button>
+              </div>
+            )}
+          </div>
+        );
+
+      case 'analytics':
+        return (
+          <div className="space-y-6">
+            <div className="bg-gradient-to-r from-purple-50 to-pink-50 p-6 rounded-lg border border-purple-200">
+              <h2 className="text-2xl font-bold mb-4 flex items-center text-gray-800">
+                <BarChart3 className="mr-2" /> Análise Avançada de Performance
+              </h2>
+              
+              {/* Statistics Overview */}
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                <div className="bg-white p-4 rounded-lg text-center shadow-sm border">
+                  <div className="text-3xl font-bold text-blue-600 mb-1">{gameState.statistics.totalDecisions}</div>
+                  <div className="text-sm text-gray-600">Decisões Tomadas</div>
+                </div>
+                <div className="bg-white p-4 rounded-lg text-center shadow-sm border">
+                  <div className="text-3xl font-bold text-green-600 mb-1">{Math.round(gameState.statistics.avgScore)}</div>
+                  <div className="text-sm text-gray-600">Pontuação Média</div>
+                </div>
+                <div className="bg-white p-4 rounded-lg text-center shadow-sm border">
+                  <div className="text-3xl font-bold text-purple-600 mb-1">{gameState.campaignProgress.round - 1}</div>
+                  <div className="text-sm text-gray-600">Campanhas</div>
+                </div>
+                <div className="bg-white p-4 rounded-lg text-center shadow-sm border">
+                  <div className="text-3xl font-bold text-orange-600 mb-1">
+                    {gameState.aiInsights?.decisionStyle?.charAt(0).toUpperCase() + (gameState.aiInsights?.decisionStyle?.slice(1) || 'Analisando')}
+                  </div>
+                  <div className="text-sm text-gray-600">Estilo de Liderança</div>
+                </div>
+              </div>
+
+              {/* Decision History */}
+              {gameState.decisions.length > 0 && (
+                <div className="bg-white p-6 rounded-lg shadow-sm border">
+                  <h3 className="text-xl font-semibold mb-4 flex items-center text-gray-800">
+                    <LineChart className="mr-2" /> Histórico de Decisões
+                  </h3>
+                  <div className="space-y-3">
+                    {gameState.decisions.slice(-5).map((decision, index) => {
+                      const avgScore = Object.values(decision.scores).reduce((sum, score) => sum + score, 0) / 5;
+                      return (
+                        <div key={index} className="border-l-4 border-blue-400 pl-4 py-2">
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <div className="font-medium text-gray-800">{decision.text}</div>
+                              <div className="text-sm text-gray-600">
+                                {decision.scenarioTitle || 'Cenário'} • {new Date(decision.timestamp).toLocaleDateString()}
+                              </div>
+                            </div>
+                            <div className={`px-3 py-1 rounded-full text-sm font-medium ${
+                              avgScore >= 70 ? 'bg-green-100 text-green-800' :
+                              avgScore >= 50 ? 'bg-yellow-100 text-yellow-800' :
+                              'bg-red-100 text-red-800'
+                            }`}>
+                              {Math.round(avgScore)}%
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Achievements */}
+              {gameState.statistics.achievements.length > 0 && (
+                <div className="bg-white p-6 rounded-lg shadow-sm border">
+                  <h3 className="text-xl font-semibold mb-4 flex items-center text-gray-800">
+                    <Trophy className="mr-2" /> Conquistas Desbloqueadas
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {gameState.statistics.achievements.map((achievement, index) => (
+                      <div key={index} className={`p-4 rounded-lg border-2 ${
+                        achievement.rarity === 'legendary' ? 'border-yellow-400 bg-yellow-50' :
+                        achievement.rarity === 'epic' ? 'border-purple-400 bg-purple-50' :
+                        achievement.rarity === 'rare' ? 'border-blue-400 bg-blue-50' :
+                        'border-gray-300 bg-gray-50'
+                      }`}>
+                        <div className="flex items-center mb-2">
+                          {achievement.icon === 'star' && <Star className="w-6 h-6 mr-2 text-yellow-500" />}
+                          {achievement.icon === 'trophy' && <Trophy className="w-6 h-6 mr-2 text-yellow-500" />}
+                          {achievement.icon === 'medal' && <Medal className="w-6 h-6 mr-2 text-orange-500" />}
+                          {achievement.icon === 'certificate' && <Certificate className="w-6 h-6 mr-2 text-blue-500" />}
+                          <span className="font-semibold text-gray-800">{achievement.title}</span>
+                        </div>
+                        <p className="text-sm text-gray-600">{achievement.description}</p>
+                        <div className="text-xs text-gray-500 mt-2">
+                          {new Date(achievement.timestamp).toLocaleDateString()}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* No Data State */}
+              {gameState.decisions.length === 0 && (
+                <div className="text-center py-12">
+                  <BarChart3 className="mx-auto h-16 w-16 text-gray-400 mb-4" />
+                  <h3 className="text-xl font-semibold text-gray-700 mb-2">Nenhum dado para análise</h3>
+                  <p className="text-gray-500 mb-6">Tome algumas decisões primeiro para ver suas análises detalhadas.</p>
+                  <button
+                    onClick={() => setActiveTab('simulator')}
+                    className="bg-purple-500 hover:bg-purple-600 text-white px-6 py-3 rounded-lg font-medium transition-colors"
+                  >
+                    Começar Simulação
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        );
+
+      case 'education':
+        return (
+          <div className="space-y-6">
+            <div className="bg-gradient-to-r from-green-50 to-teal-50 p-6 rounded-lg border border-green-200">
+              <h2 className="text-2xl font-bold mb-4 flex items-center text-gray-800">
+                <BookOpen className="mr-2" /> Centro Educacional Estratégico
+              </h2>
+              
+              {/* Study Materials */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div className="bg-white p-6 rounded-lg shadow-sm border">
+                  <h3 className="text-xl font-semibold mb-4 flex items-center text-gray-800">
+                    <Globe className="mr-2" /> Casos Históricos
+                  </h3>
+                  <div className="space-y-4">
+                    <div className="border-l-4 border-blue-400 pl-4">
+                      <h4 className="font-medium text-gray-800">Crise dos Mísseis de Cuba (1962)</h4>
+                      <p className="text-sm text-gray-600 mb-2">
+                        Exemplo clássico de tomada de decisão sob pressão extrema e risco nuclear.
+                      </p>
+                      <button className="text-blue-600 text-sm hover:underline">
+                        Estudar caso →
+                      </button>
+                    </div>
+                    <div className="border-l-4 border-green-400 pl-4">
+                      <h4 className="font-medium text-gray-800">Operação Tempestade no Deserto (1991)</h4>
+                      <p className="text-sm text-gray-600 mb-2">
+                        Coordenação internacional e uso de tecnologia militar avançada.
+                      </p>
+                      <button className="text-blue-600 text-sm hover:underline">
+                        Estudar caso →
+                      </button>
+                    </div>
+                    <div className="border-l-4 border-purple-400 pl-4">
+                      <h4 className="font-medium text-gray-800">Resposta ao COVID-19 (2020)</h4>
+                      <p className="text-sm text-gray-600 mb-2">
+                        Gestão de crise sanitária global e coordenação de políticas públicas.
+                      </p>
+                      <button className="text-blue-600 text-sm hover:underline">
+                        Estudar caso →
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-white p-6 rounded-lg shadow-sm border">
+                  <h3 className="text-xl font-semibold mb-4 flex items-center text-gray-800">
+                    <Shield className="mr-2" /> Frameworks de Decisão
+                  </h3>
+                  <div className="space-y-3">
+                    <div className="p-3 bg-gray-50 rounded border">
+                      <h4 className="font-medium text-gray-800">Modelo OODA Loop</h4>
+                      <p className="text-sm text-gray-600">Observe → Orient → Decide → Act</p>
+                    </div>
+                    <div className="p-3 bg-gray-50 rounded border">
+                      <h4 className="font-medium text-gray-800">Análise SWOT Estratégica</h4>
+                      <p className="text-sm text-gray-600">Strengths, Weaknesses, Opportunities, Threats</p>
+                    </div>
+                    <div className="p-3 bg-gray-50 rounded border">
+                      <h4 className="font-medium text-gray-800">Matriz de Eisenhower</h4>
+                      <p className="text-sm text-gray-600">Priorização: Urgente/Importante</p>
+                    </div>
+                    <div className="p-3 bg-gray-50 rounded border">
+                      <h4 className="font-medium text-gray-800">Teoria dos Jogos</h4>
+                      <p className="text-sm text-gray-600">Análise de interações estratégicas</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Interactive Tutorials */}
+              <div className="bg-white p-6 rounded-lg shadow-sm border">
+                <h3 className="text-xl font-semibold mb-4 flex items-center text-gray-800">
+                  <Zap className="mr-2" /> Tutoriais Interativos
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <button 
+                    onClick={() => setShowTutorial(true)}
+                    className="p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-400 transition-colors hover:bg-blue-50"
+                  >
+                    <div className="text-center">
+                      <Play className="mx-auto mb-2 w-8 h-8 text-blue-500" />
+                      <h4 className="font-medium text-gray-800 mb-1">Introdução ao Simulador</h4>
+                      <p className="text-sm text-gray-600">Aprenda a usar todas as funcionalidades</p>
+                    </div>
+                  </button>
+                  <button className="p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-green-400 transition-colors hover:bg-green-50">
+                    <div className="text-center">
+                      <Target className="mx-auto mb-2 w-8 h-8 text-green-500" />
+                      <h4 className="font-medium text-gray-800 mb-1">Tomada de Decisão</h4>
+                      <p className="text-sm text-gray-600">Princípios fundamentais</p>
+                    </div>
+                  </button>
+                  <button className="p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-purple-400 transition-colors hover:bg-purple-50">
+                    <div className="text-center">
+                      <Users className="mx-auto mb-2 w-8 h-8 text-purple-500" />
+                      <h4 className="font-medium text-gray-800 mb-1">Liderança em Crise</h4>
+                      <p className="text-sm text-gray-600">Gestão de equipes sob pressão</p>
+                    </div>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+
+      case 'custom':
+        return (
+          <div className="space-y-6">
+            <div className="bg-gradient-to-r from-orange-50 to-red-50 p-6 rounded-lg border border-orange-200">
+              <h2 className="text-2xl font-bold mb-4 flex items-center text-gray-800">
+                <Settings className="mr-2" /> Personalização e Cenários Customizados
+              </h2>
+              
+              <div className="bg-white p-6 rounded-lg shadow-sm border">
+                <h3 className="text-xl font-semibold mb-4">Criar Novo Cenário</h3>
+                
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-2 text-gray-700">Título do Cenário</label>
+                    <input 
+                      type="text" 
+                      placeholder="Ex: Crise Diplomática Regional"
+                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium mb-2 text-gray-700">Categoria</label>
+                      <select className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <option value="">Selecione uma categoria</option>
+                        {simulationTypes.map(type => (
+                          <option key={type.id} value={type.id}>{type.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium mb-2 text-gray-700">Tempo Limite (segundos)</label>
+                      <input 
+                        type="number" 
+                        placeholder="300"
+                        className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium mb-2 text-gray-700">Descrição</label>
+                    <textarea 
+                      placeholder="Descreva a situação inicial..."
+                      className="w-full p-3 border border-gray-300 rounded-lg h-24 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium mb-2 text-gray-700">Contexto Detalhado</label>
+                    <textarea 
+                      placeholder="Informações adicionais e background..."
+                      className="w-full p-3 border border-gray-300 rounded-lg h-32 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium mb-2 text-gray-700">Stakeholders (separados por vírgula)</label>
+                    <input 
+                      type="text" 
+                      placeholder="Governo, Oposição, Mídia, População Civil"
+                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+                  
+                  <div className="bg-gray-50 p-4 rounded-lg border">
+                    <h4 className="font-medium mb-3 text-gray-800">Opções de Decisão</h4>
+                    <div className="space-y-4">
+                      {[1, 2, 3].map(num => (
+                        <div key={num} className="bg-white p-4 rounded border">
+                          <h5 className="font-medium mb-2 text-gray-800">Opção {num}</h5>
+                          <input 
+                            type="text" 
+                            placeholder="Texto da opção..."
+                            className="w-full p-2 border border-gray-300 rounded mb-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          />
+                          <div className="grid grid-cols-3 gap-2">
+                            <input 
+                              type="text" 
+                              placeholder="Consequência curto prazo"
+                              className="p-2 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            />
+                            <input 
+                              type="text" 
+                              placeholder="Consequência médio prazo"
+                              className="p-2 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            />
+                            <input 
+                              type="text" 
+                              placeholder="Consequência longo prazo"
+                              className="p-2 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            />
+                          </div>
+                          <div className="grid grid-cols-5 gap-2 mt-2">
+                            <input type="number" placeholder="Político" min="0" max="100" className="p-1 border border-gray-300 rounded text-xs" />
+                            <input type="number" placeholder="Econômico" min="0" max="100" className="p-1 border border-gray-300 rounded text-xs" />
+                            <input type="number" placeholder="Social" min="0" max="100" className="p-1 border border-gray-300 rounded text-xs" />
+                            <input type="number" placeholder="Militar" min="0" max="100" className="p-1 border border-gray-300 rounded text-xs" />
+                            <input type="number" placeholder="Internacional" min="0" max="100" className="p-1 border border-gray-300 rounded text-xs" />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  <div className="flex space-x-4">
+                    <button className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg font-medium transition-colors">
+                      Salvar Cenário
+                    </button>
+                    <button className="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-lg font-medium transition-colors">
+                      Testar Cenário
+                    </button>
+                    <button className="bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-lg font-medium transition-colors">
+                      Limpar Formulário
+                    </button>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Custom Scenarios List - Empty State */}
+              <div className="bg-white p-6 rounded-lg shadow-sm border">
+                <h3 className="text-xl font-semibold mb-4">Seus Cenários Personalizados</h3>
+                <div className="text-center py-8">
+                  <Settings className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+                  <p className="text-gray-500 mb-4">Você ainda não criou nenhum cenário personalizado.</p>
+                  <p className="text-sm text-gray-400">Crie seu primeiro cenário usando o formulário acima!</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+
+      default:
+        return null;
+    }
+  };
+
+  if (gameState.isLoading) {
+    return (
+      <div className="max-w-7xl mx-auto p-6 bg-gray-50 min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-flex items-center px-6 py-4 bg-white rounded-lg shadow-lg">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mr-4"></div>
+            <span className="text-gray-700 font-medium">Processando com Inteligência Artificial...</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="max-w-7xl mx-auto p-6 bg-gray-50 min-h-screen">
+      <TutorialSystem />
+      
+      {/* Header */}
+      <div className="text-center mb-8">
+        <h1 className="text-4xl font-bold text-gray-800 mb-2 flex items-center justify-center">
+          <Target className="mr-3 text-blue-600" /> 
+          Simulador de Decisão Estratégica
+          <span className="ml-3 text-sm bg-blue-100 text-blue-800 px-2 py-1 rounded-full">v2.0 IA</span>
+        </h1>
+        <p className="text-gray-600 max-w-4xl mx-auto">
+          Plataforma avançada com Inteligência Artificial adaptativa, análise comportamental em tempo real, 
+          sistema de conquistas gamificado e treinamento personalizado em tomada de decisões estratégicas
+        </p>
+      </div>
+
+      {/* Navigation */}
+      <div className="mb-8">
+        <div className="flex flex-wrap justify-center gap-2">
+          {[
+            { id: 'simulator', label: 'Simulador IA', icon: Play, color: 'blue' },
+            { id: 'analytics', label: 'Análise Avançada', icon: BarChart3, color: 'purple' },
+            { id: 'education', label: 'Centro Educacional', icon: BookOpen, color: 'green' },
+            { id: 'custom', label: 'Personalizar', icon: Settings, color: 'orange' }
+          ].map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`flex items-center px-4 py-3 rounded-lg transition-all transform hover:scale-105 ${
+                activeTab === tab.id
+                  ? `bg-${tab.color}-600 text-white shadow-lg`
+                  : 'bg-white text-gray-600 hover:bg-gray-100 shadow-sm'
+              }`}
+            >
+              <tab.icon className="w-4 h-4 mr-2" />
+              {tab.label}
+              {tab.id === 'simulator' && (
+                <span className="ml-2 bg-red-500 text-white text-xs px-1 py-0.5 rounded-full">NOVO</span>
+              )}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Main Content */}
+      {renderMainContent()}
+
+      {/* Footer com informações do sistema */}
+      <div className="mt-12 text-center text-sm text-gray-500 border-t pt-6">
+        <div className="flex items-center justify-center space-x-6 mb-4">
+          <div className="flex items-center">
+            <Brain className="w-4 h-4 mr-1 text-blue-500" />
+            <span>IA Adaptativa {gameState.aiInsights ? 'Ativa' : 'Aguardando'}</span>
+          </div>
+          <div className="flex items-center">
+            <Users className="w-4 h-4 mr-1 text-green-500" />
+            <span>Modo Colaborativo {collaborativeSession.isActive ? 'Ativo' : 'Disponível'}</span>
+          </div>
+          <div className="flex items-center">
+            <BookOpen className="w-4 h-4 mr-1 text-purple-500" />
+            <span>15+ Tipos de Simulação</span>
+          </div>
+          <div className="flex items-center">
+            <Trophy className="w-4 h-4 mr-1 text-yellow-500" />
+            <span>Sistema de Conquistas</span>
+          </div>
+        </div>
+        <p className="text-gray-400">
+          Simulador Estratégico v2.0 - Powered by Advanced AI • Decisões tomadas: {gameState.statistics.totalDecisions} • 
+          Conquistas: {gameState.statistics.achievements.length}
+        </p>
+      </div>
+    </div>
+  );
+};
+
+export default AdvancedStrategicSimulator;      // Conquista: Veterano
+      if (gameState.decisions.length + 1 === 10) {
+        newAchievements.push({
+          id: 'veteran',
+          title: 'Veterano Estratégico',
+          description: 'Completou 10 simulações estratégicas',
+          icon: 'medal',
+          rarity: 'uncommon',
+          timestamp: new Date()
+        });
+      }
+      
+      // Conquista: Mestre
+      if (gameState.decisions.length + 1 === 50) {
+        newAchievements.push({
+          id: 'master',
+          title: 'Mestre Estrategista',
+          description: 'Alcançou 50 decisões estratégicas',
+          icon: 'crown',
+          rarity: 'legendary',
+          timestamp: new Date()
+        });
+      }
+      
+      return newAchievements;
+    }
+  };
+
+  // Sistema colaborativo simulado
+  const collaborativeSystem = {
+    createSession: (scenarioId) => {
+      const sessionId = `session_${Date.now()}`;
+      setCollaborativeSession({
+        isActive: true,
+        sessionId,
+        participants: [
+          { id: '1', name: 'Você', role: 'Commander', vote: null, avatar: '👤' },
+          { id: '2', name: 'Ana Silva', role: 'Intelligence Analyst', vote: null, avatar: '👩‍💼' },
+          { id: '3', name: 'Carlos Santos', role: 'Political Advisor', vote: null, avatar: '👨‍💼' },
+          { id: '4', name: 'Maria Costa', role: 'Military Strategist', vote: null, avatar: '👩‍✈️' }
+        ],
+        messages: [
+          { id: '1', user: 'Sistema', message: 'Sessão colaborativa iniciada. Discutam as opções antes de votar.', timestamp: new Date(), isSystem: true }
+        ]
+      });
+      
+      // Simular mensagens da IA
+      setTimeout(() => {
+        setCollaborativeSession(prev => ({
+          ...prev,
+          messages: [...prev.messages, {
+            id: Date.now(),
+            user: 'Ana Silva',
+            message: 'Analisando dados de inteligência disponíveis para esta situação...',
+            timestamp: new Date()
+          }]
+        }));
+      }, 2000);
+      
+      setTimeout(() => {
+        setCollaborativeSession(prev => ({
+          ...prev,
+          messages: [...prev.messages, {
+            id: Date.now() + 1,
+            user: 'Carlos Santos',
+            message: 'Do ponto de vista político, precisamos considerar as repercussões de longo prazo.',
+            timestamp: new Date()
+          }]
+        }));
+      }, 4000);
+    },
+
+    simulateVoting: (decision) => {
+      const updatedParticipants = collaborativeSession.participants.map(p => {
+        if (p.id === '1') return { ...p, vote: decision.id };
+        
+        // IA vota baseado na role
+        const rolePreferences = {
+          'Intelligence Analyst': ['covert_response', 'bilateral_talks'],
+          'Political Advisor': ['diplomatic_approach', 'mediation_request'],
+          'Military Strategist': ['show_of_force', 'immediate_response']
+        };
+        
+        const preferences = rolePreferences[p.role] || [];
+        const aiVote = preferences.find(pref => 
+          gameState.currentScenario?.options.find(opt => opt.id === pref)
+        ) || decision.id;
+        
+        return { ...p, vote: aiVote };
+      });
+      
+      setCollaborativeSession(prev => ({
+        ...prev,
+        participants: updatedParticipants
+      }));
+    }
+  };
+
+  // Timer effect
+  useEffect(() => {
+    if (gameState.currentScenario && gameState.currentScenario.timeLimit && timeRemaining > 0) {
+      const timer = setInterval(() => {
+        setTimeRemaining(prev => {
+          if (prev <= 1) {
+            clearInterval(timer);
+            // Auto-select first option when time runs out
+            if (gameState.currentScenario.options.length > 0) {
+              executeDecision(gameState.currentScenario.options[0]);
+            }
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+
+      return () => clearInterval(timer);
+    }
+  }, [gameState.currentScenario, timeRemaining]);
+
+  // AI Analysis effect
+  useEffect(() => {
+    if (selectedDecision && gameState.decisions.length >= 0) {
+      const insights = AIAnalyzer.analyzeDecision(selectedDecision, gameState.decisions, gameState.currentScenario);
+      dispatch({ type: 'SET_AI_INSIGHTS', payload: insights });
+    }
+  }, [selectedDecision, gameState.decisions]);
+
+  // Função para executar decisão
+  const executeDecision = (decision) => {
+    setSelectedDecision(decision);
+    
+    // Simular análise da IA
+    dispatch({ type: 'SET_LOADING', payload: true });
+    
+    setTimeout(() => {
+      const results = {
+        decision,
+        timestamp: new Date(),
+        analysis: AIAnalyzer.analyzeDecision(decision, gameState.decisions, gameState.currentScenario)
+      };
+      
+      dispatch({
+        type: 'EXECUTE_DECISION',
+        payload: { decision, results, gameMode }
+      });
+      
+      // Verificar conquistas
+      const achievements = AchievementSystem.checkAchievements(decision, results, gameState);
+      if (achievements.length > 0) {
+        dispatch({ type: 'UPDATE_ACHIEVEMENTS', payload: achievements });
+        
+        // Mostrar notificação de conquista
+        achievements.forEach(achievement => {
+          setTimeout(() => {
+            alert(`🏆 Conquista Desbloqueada!\n${achievement.title}\n${achievement.description}`);
+          }, 1000);
+        });
+      }
+      
+      // Simular colaboração se ativa
+      if (collaborativeSession.isActive) {
+        collaborativeSystem.simulateVoting(decision);
+      }
+      
+      dispatch({ type: 'SET_LOADING', payload: false });
+    }, 1500);
+  };
+
+  // Função para iniciar nova simulação
+  const startNewSimulation = (typeId) => {
+    let scenario;
+    
+    if (gameMode === 'campaign' && gameState.decisions.length > 0) {
+      scenario = ScenarioGenerator.generateAdaptiveScenario(gameState.decisions, {});
+    } else {
+      const scenarios = baseScenarios[typeId] || [];
+      if (scenarios.length > 0) {
+        scenario = scenarios[Math.floor(Math.random() * scenarios.length)];
+      } else {
+        // Cenário padrão se não encontrar
+        scenario = baseScenarios.crisis[0];
+      }
+    }
+    
+    dispatch({ type: 'START_SCENARIO', payload: scenario });
+    setSelectedDecision(null);
+    setTimeRemaining(scenario.timeLimit || 0);
+  };
+
+  // Função para formatar tempo
+  const formatTime = (seconds) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  // Sistema de salvamento
+  const saveSystem = {
+    saveProgress: () => {
+      const saveData = {
+        gameState,
+        timestamp: new Date().toISOString()
+      };
+      const blob = new Blob([JSON.stringify(saveData, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `strategic_simulator_save_${Date.now()}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    },
+
+    loadProgress: (event) => {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const saveData = JSON.parse(e.target.result);
+          // Carregar dados salvos (implementação simplificada)
+          alert('Progresso carregado com sucesso!');
+        } catch (error) {
+          alert('Erro ao carregar arquivo de salvamento');
+        }
+      };
+      reader.readAsText(file);
+    }
+  };
+
+  // Tutorial System Component
+  const TutorialSystem = () => {
+    const [tutorialStep, setTutorialStep] = useState(0);
+    const tutorialSteps = [
+      {
+        title: "Bem-vindo ao Simulador Estratégico Avançado",
+        content: "Este simulador oferece experiências realistas de tomada de decisão com IA adaptativa que aprende com você.",
+        highlight: "main-title"
+      },
+      {
+        title: "Inteligência Artificial Avançada",
+        content: "Nossa IA analisa suas decisões, identifica seu estilo de liderança e oferece insights personalizados.",
+        highlight: "ai-section"
+      },
+      {
+        title: "Múltiplos Modos de Jogo",
+        content: "Escolha entre simulações individuais, campanhas conectadas ou modo colaborativo com IA simulando equipe.",
+        highlight: "game-modes"
+      },
+      {
+        title: "Sistema de Conquistas",
+        content: "Desbloqueie conquistas conforme desenvolve suas habilidades e alcança marcos importantes.",
+        highlight: "achievements"
+      }
+    ];
+
+    if (!showTutorial) return null;
+
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+        <div className="bg-white rounded-lg p-6 max-w-md mx-4 shadow-2xl">
+          <h3 className="text-xl font-bold mb-4 text-gray-800">{tutorialSteps[tutorialStep].title}</h3>
+          <p className="mb-6 text-gray-600 leading-relaxed">{tutorialSteps[tutorialStep].content}</p>
+          
+          <div className="flex justify-between items-center">
+            <button
+              onClick={() => setTutorialStep(Math.max(0, tutorialStep - 1))}
+              disabled={tutorialStep === 0}
+              className="px-4 py-2 bg-gray-300 text-gray-700 rounded disabled:opacity-50 hover:bg-gray-400 transition-colors"
+            >
+              Anterior
+            </button>
+            
+            <div className="flex space-x-2">
+              {tutorialSteps.map((_, index) => (
+                <div
+                  key={index}
+                  className={`w-2 h-2 rounded-full ${
+                    index === tutorialStep ? 'bg-blue-500' : 'bg-gray-300'
+                  }`}
+                />
+              ))}
+            </div>
+            
+            {tutorialStep < tutorialSteps.length - 1 ? (
+              <button
+                onClick={() => setTutorialStep(tutorialStep + 1)}
+                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+              >
+                Próximo
+              </button>
+            ) : (
+              <button
+                onClick={() => setShowTutorial(false)}
+                className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition-colors"
+              >
+                Começar!
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // Advanced Analysis Component
+  const AdvancedAnalysis = ({ results, userHistory, aiInsights }) => {
+    if (!results && !aiInsights) return null;
+
+    return (
+      <div className="mt-8 space-y-6">
+        {/* AI Insights Section */}
+        {aiInsights && (
+          <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-6 rounded-lg border border-blue-200">
+            <h3 className="text-xl font-bold mb-4 flex items-center text-gray-800">
+              <Brain className="mr-2 text-blue-600" /> Análise da Inteligência Artificial
+            </h3>
+            
+            {/* Leadership Style */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+              <div className="bg-white p-4 rounded-lg shadow-sm">
+                <h4 className="font-semibold mb-3 flex items-center">
+                  <User className="mr-2 w-4 h-4" /> Perfil de Liderança
+                </h4>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-blue-600 mb-2">
+                    {aiInsights.decisionStyle.charAt(0).toUpperCase() + aiInsights.decisionStyle.slice(1)}
+                  </div>
+                  <div className="text-sm text-gray-600 mb-2">
+                    Confiança: {aiInsights.confidence}%
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div 
+                      className="bg-blue-500 h-2 rounded-full transition-all duration-500"
+                      style={{ width: `${aiInsights.confidence}%` }}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white p-4 rounded-lg shadow-sm">
+                <h4 className="font-semibold mb-3 flex items-center">
+                  <Activity className="mr-2 w-4 h-4" /> Qualidades de Liderança
+                </h4>
+                {aiInsights.leadershipQualities && (
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm">Score Geral:</span>
+                      <span className="font-bold text-lg">
+                        {aiInsights.leadershipQualities.overall}/100
+                      </span>
+                    </div>
+                    {aiInsights.leadershipQualities.topStrengths?.slice(0, 2).map(([quality, score], index) => (
+                      <div key={index} className="flex justify-between text-sm">
+                        <span className="capitalize">{quality}:</span>
+                        <span className="font-medium text-green-600">{Math.round(score)}%</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Insights Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+              {/* Strengths */}
+              {aiInsights.strengthAreas && aiInsights.strengthAreas.length > 0 && (
+                <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+                  <h5 className="font-semibold text-green-800 mb-2 flex items-center">
+                    <Star className="mr-1 w-4 h-4" /> Pontos Fortes
+                  </h5>
+                  <ul className="text-sm text-green-700 space-y-1">
+                    {aiInsights.strengthAreas.slice(0, 3).map((area, index) => (
+                      <li key={index} className="capitalize">• {area}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* Areas for Improvement */}
+              {aiInsights.improvementAreas && aiInsights.improvementAreas.length > 0 && (
+                <div className="bg-orange-50 p-4 rounded-lg border border-orange-200">
+                  <h5 className="font-semibold text-orange-800 mb-2 flex items-center">
+                    <TrendingUp className="mr-1 w-4 h-4" /> Para Melhorar
+                  </h5>
+                  <ul className="text-sm text-orange-700 space-y-1">
+                    {aiInsights.improvementAreas.slice(0, 3).map((area, index) => (
+                      <li key={index} className="capitalize">• {area}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* Risk Assessment */}
+              <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
+                <h5 className="font-semibold text-purple-800 mb-2 flex items-center">
+                  <Shield className="mr-1 w-4 h-4" /> Avaliação de Risco
+                </h5>
+                <div className="text-sm text-purple-700">
+                  <div className="mb-2">
+                    Nível: <span className="font-semibold capitalize">{aiInsights.riskLevel}</span>
+                  </div>
+                  {aiInsights.contextualInsights && (
+                    <div className="text-xs">{aiInsights.contextualInsights}</div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* AI Recommendation */}
+            <div className="bg-white p-4 rounded-lg border border-gray-200">
+              <h5 className="font-semibold mb-2 flex items-center text-gray-800">
+                <Lightbulb className="mr-2 w-4 h-4 text-yellow-500" /> Recomendação Personalizada
+              </h5>
+              <p className="text-gray-700 leading-relaxed">{aiInsights.recommendation}</p>
+              {aiInsights.futureScenarioHints && aiInsights.futureScenarioHints.length > 0 && (
+                <div className="mt-3 p-3 bg-blue-50 rounded border-l-4 border-blue-400">
+                  <p className="text-sm text-blue-700">
+                    <strong>Dica:</strong> {aiInsights.futureScenarioHints[0]}
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Decision Impact Analysis */}
+        {results && (
+          <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
+            <h3 className="text-xl font-bold mb-4 flex items-center text-gray-800">
+              <BarChart3 className="mr-2" /> Análise de Impacto da Decisão
+            </h3>
+            
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
+              {Object.entries(results.decision.scores).map(([area, score]) => (
+                <div key={area} className="text-center">
+                  <div className="text-sm font-medium capitalize mb-1 text-gray-600">{area}</div>
+                  <div className={`text-2xl font-bold mb-2 ${
+                    score >= 70 ? 'text-green-600' : 
+                    score >= 50 ? 'text-yellow-600' : 'text-red-600'
+                  }`}>
+                    {score}
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div 
+                      className={`h-2 rounded-full transition-all duration-500 ${
+                        score >= 70 ? 'bg-green-500' : 
+                        score >= 50 ? 'bg-yellow-500' : 'bg-red-500'
+                      }`}
+                      style={{ width: `${score}%` }}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Consequences Timeline */}
+            <div className="space-y-4">
+              <h4 className="font-semibold text-gray-800">Timeline de Consequências:</h4>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="p-4 bg-green-50 rounded-lg">
+                  <div className="flex items-center mb-2">
+                    <Clock className="w-4 h-4 mr-2 text-green-600" />
+                    <span className="font-semibold text-green-800">Curto Prazo</span>
+                  </div>
+                  <p className="text-sm text-green-700">{results.decision.consequences.short}</p>
+                </div>
+                <div className="p-4 bg-yellow-50 rounded-lg">
+                  <div className="flex items-center mb-2">
+                    <Clock className="w-4 h-4 mr-2 text-yellow-600" />
+                    <span className="font-semibold text-yellow-800">Médio Prazo</span>
+                  </div>
+                  <p className="text-sm text-yellow-700">{results.decision.consequences.medium}</p>
+                </div>
+                <div className="p-4 bg-blue-50 rounded-lg">
+                  <div className="flex items-center mb-2">
+                    <Clock className="w-4 h-4 mr-2 text-blue-600" />
+                    <span className="font-semibold text-blue-800">Longo Prazo</span>
+                  </div>
+                  <p className="text-sm text-blue-700">{results.decision.consequences.long}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Historical Performance */}
+        {userHistory && userHistory.length > 0 && (
+          <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
+            <h3 className="text-xl font-bold mb-4 flex items-center text-gray-800">
+              <LineChart className="mr-2" /> Evolução Histórica
+            </h3>
+            
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+              <div className="text-center p-3 bg-blue-50 rounded-lg">
+                <div className="text-2xl font-bold text-blue-600">{userHistory.length}</div>
+                <div className="text-sm text-blue-700">Decisões</div>
+              </div>
+              <div className="text-center p-3 bg-green-50 rounded-lg">
+                <div className="text-2xl font-bold text-green-600">
+                  {Math.round(userHistory.reduce((sum, d) => sum + Object.values(d.scores).reduce((s, sc) => s + sc, 0) / 5, 0) / userHistory.length)}
+                </div>
+                <div className="text-sm text-green-700">Média</div>
+              </div>
+              <div className="text-center p-3 bg-purple-50 rounded-lg">
+                <div className="text-2xl font-bold text-purple-600">
+                  {Math.max(...userHistory.map(d => Object.values(d.scores).reduce((s, sc) => s + sc, 0) / 5))}
+                </div>
+                <div className="text-sm text-purple-700">Melhor</div>
+              </div>
+              <div className="text-center p-3 bg-orange-50 rounded-lg">
+                <div className="text-2xl font-bold text-orange-600">
+                  {aiInsights?.evolution || 'Estável'}
+                </div>
+                <div className="text-sm text-orange-700">Tendência</div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  // Render main content based on active tab
+  const renderMainContent = () => {
+    switch (activeTab) {
+      case 'simulator':
+        return (
+          <div className="space-y-6">
+            {/* Game Configuration */}
+            <div className="bg-gradient-to-r from-indigo-50 to-blue-50 p-6 rounded-lg border border-indigo-200">
+              <h3 className="text-xl font-semibold mb-4 flex items-center text-gray-800">
+                <Settings className="mr-2" /> Configurações da Simulação
+              </h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2 text-gray-700">Modo de Jogo</label>
+                  <select 
+                    value={gameMode} 
+                    onChange={(e) => setGameMode(e.target.value)}
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  >
+                    <option value="single">Simulação Individual</option>
+                    <option value="campaign">Campanha Adaptativa</option>
+                    <option value="collaborative">Colaborativo com IA</option>
+                  </select>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium mb-2 text-gray-700">Nível de Dificuldade</label>
+                  <select 
+                    value={difficultyLevel} 
+                    onChange={(e) => setDifficultyLevel(e.target.value)}
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  >
+                    <option value="beginner">Iniciante</option>
+                    <option value="intermediate">Intermediário</option>
+                    <option value="advanced">Avançado</option>
+                  </select>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium mb-2 text-gray-700">Ações</label>
+                  <div className="flex space-x-2">
+                    <button 
+                      onClick={saveSystem.saveProgress}
+                      className="flex-1 bg-green-500 hover:bg-green-600 text-white p-2 rounded-lg text-sm flex items-center justify-center transition-colors"
+                    >
+                      <Save className="w-4 h-4 mr-1" /> Salvar
+                    </button>
+                    <label className="flex-1 bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-lg text-sm flex items-center justify-center cursor-pointer transition-colors">
+                      <Upload className="w-4 h-4 mr-1" /> Carregar
+                      <input 
+                        type="file" 
+                        accept=".json" 
+                        onChange={saveSystem.loadProgress} 
+                        className="hidden" 
+                      />
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              {/* Campaign Progress */}
+              {gameMode === 'campaign' && gameState.decisions.length > 0 && (
+                <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
+                  <h4 className="font-semibold mb-3 flex items-center text-gray-800">
+                    <Award className="mr-2" /> Progresso da Campanha
+                  </h4>
+                  <div className="grid grid-cols-3 gap-4 text-center">
+                    <div>
+                      <div className="text-2xl font-bold text-blue-600">{gameState.campaignProgress.round}</div>
+                      <div className="text-sm text-gray-600">Rodada</div>
+                    </div>
+                    <div>
+                      <div className="text-2xl font-bold text-green-600">{Math.round(gameState.campaignProgress.totalScore)}</div>
+                      <div className="text-sm text-gray-600">Pontos</div>
+                    </div>
+                    <div>
+                      <div className="text-2xl font-bold text-purple-600">{gameState.decisions.length}</div>
+                      <div className="text-sm text-gray-600">Decisões</div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Collaborative Session */}
+              {gameMode === 'collaborative' && collaborativeSession.isActive && (
+                <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
+                  <h4 className="font-semibold mb-3 flex items-center text-gray-800">
+                    <Users className="mr-2" /> Sessão Colaborativa
+                  </h4>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-600">ID: {collaborativeSession.sessionId}</span>
+                      <span className="text-sm text-green-600 flex items-center">
+                        <div className="w-2 h-2 bg-green-500 rounded-full mr-1"></div>
+                        Ativo
+                      </span>
+                    </div>
+                    <div className="flex space-x-2">
+                      {collaborativeSession.participants.map(p => (
+                        <div key={p.id} className="flex items-center bg-gray-100 px-3 py-1 rounded-full text-sm">
+                          <span className="mr-1">{p.avatar}</span>
+                          <span>{p.name}</span>
+                          {p.vote && <span className="ml-1 text-green-600">✓</span>}
+                        </div>
+                      ))}
+                    </div>
+                    
+                    {/* Chat Messages */}
+                    <div className="max-h-32 overflow-y-auto bg-gray-50 p-3 rounded border">
+                      {collaborativeSession.messages.map(msg => (
+                        <div key={msg.id} className="mb-2 text-sm">
+                          <span className={`font-medium ${msg.isSystem ? 'text-blue-600' : 'text-gray-800'}`}>
+                            {msg.user}:
+                          </span>
+                          <span className="ml-1 text-gray-700">{msg.message}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Simulation Types */}
+            <div className="mb-8">
+              <h3 className="text-xl font-semibold mb-4 text-gray-800">Tipos de Simulação Disponíveis</h3>
+              
+              <div className="mb-6 bg-gray-50 p-4 rounded-lg border border-gray-200">import React, { useState, useEffect, useReducer } from 'react';
+import { ChevronRight, Users, Brain, BookOpen, BarChart3, Settings, Play, Save, Download, Upload, MessageCircle, Target, TrendingUp, Award, Clock, Globe, Shield, Zap, Star, Trophy, Medal, Certificate, LineChart, PieChart, Activity, User, Lightbulb } from 'lucide-react';
+
+// Simulador de Decisão Estratégica - Versão Web Completa com IA Avançada
+const AdvancedStrategicSimulator = () => {
+  // Reducer para gerenciar estado complexo do jogo
+  const gameReducer = (state, action) => {
+    switch (action.type) {
+      case 'SET_LOADING':
+        return { ...state, isLoading: action.payload };
+      case 'START_SCENARIO':
+        return { 
+          ...state, 
+          currentScenario: action.payload,
+          currentResults: null,
+          isScenarioActive: true 
+        };
+      case 'EXECUTE_DECISION':
+        const newDecision = {
+          ...action.payload.decision,
+          timestamp: new Date(),
+          scenarioId: state.currentScenario?.id,
+          scenarioTitle: state.currentScenario?.title,
+          gameMode: action.payload.gameMode || 'single'
+        };
+        
+        return {
+          ...state,
+          decisions: [...state.decisions, newDecision],
+          currentResults: action.payload.results,
+          campaignProgress: {
+            ...state.campaignProgress,
+            round: state.campaignProgress.round + 1,
+            totalScore: state.campaignProgress.totalScore + 
+              (Object.values(newDecision.scores).reduce((sum, score) => sum + score, 0) / 5),
+            decisions: [...state.campaignProgress.decisions, newDecision]
+          },
+          statistics: {
+            ...state.statistics,
+            totalDecisions: state.statistics.totalDecisions + 1,
+            avgScore: ((state.statistics.avgScore * state.statistics.totalDecisions) + 
+                     (Object.values(newDecision.scores).reduce((sum, score) => sum + score, 0) / 5)) / 
+                     (state.statistics.totalDecisions + 1)
+          }
+        };
+      case 'SET_AI_INSIGHTS':
+        return { ...state, aiInsights: action.payload };
+      case 'UPDATE_ACHIEVEMENTS':
+        return {
+          ...state,
+          statistics: {
+            ...state.statistics,
+            achievements: [...state.statistics.achievements, ...action.payload]
+          }
+        };
+      default:
+        return state;
+    }
+  };
+
+  // Estado inicial do jogo
+  const initialGameState = {
+    currentScenario: null,
+    decisions: [],
+    currentResults: null,
+    aiInsights: null,
+    isLoading: false,
+    campaignProgress: { round: 1, totalScore: 0, decisions: [] },
+    statistics: {
+      totalDecisions: 0,
+      avgScore: 0,
+      bestScore: 0,
+      totalPlayTime: 0,
+      leadershipStyle: 'developing',
+      achievements: []
+    }
+  };
+
+  // Estados principais
+  const [gameState, dispatch] = useReducer(gameReducer, initialGameState);
+  const [activeTab, setActiveTab] = useState('simulator');
+  const [gameMode, setGameMode] = useState('single');
+  const [difficultyLevel, setDifficultyLevel] = useState('intermediate');
+  const [selectedDecision, setSelectedDecision] = useState(null);
+  const [showTutorial, setShowTutorial] = useState(false);
+  const [timeRemaining, setTimeRemaining] = useState(0);
+  const [collaborativeSession, setCollaborativeSession] = useState({
+    isActive: false,
+    participants: [],
+    messages: []
+  });
+
+  // Tipos de simulação expandidos
+  const simulationTypes = [
+    { id: 'crisis', name: 'Gestão de Crise', emoji: '🚨', description: 'Situações de emergência que requerem resposta imediata', difficulty: 'high', color: '#ef4444' },
+    { id: 'diplomacy', name: 'Negociação Diplomática', emoji: '🤝', description: 'Resolução de conflitos através do diálogo', difficulty: 'medium', color: '#10b981' },
+    { id: 'resource', name: 'Alocação de Recursos', emoji: '📊', description: 'Distribuição estratégica de recursos limitados', difficulty: 'medium', color: '#f59e0b' },
+    { id: 'intelligence', name: 'Operações de Inteligência', emoji: '🕵️', description: 'Coleta e análise de informações estratégicas', difficulty: 'high', color: '#8b5cf6' },
+    { id: 'cyber', name: 'Segurança Cibernética', emoji: '💻', description: 'Proteção contra ameaças digitais', difficulty: 'high', color: '#06b6d4' },
+    { id: 'humanitarian', name: 'Ajuda Humanitária', emoji: '❤️', description: 'Coordenação de operações de socorro', difficulty: 'low', color: '#ec4899' },
+    { id: 'continuity', name: 'Continuidade de Apoio', emoji: '📋', description: 'Decisões sobre manutenção de operações', difficulty: 'medium', color: '#84cc16' },
+    { id: 'coordination', name: 'Coordenação de Células', emoji: '🔗', description: 'Integração entre diferentes unidades operacionais', difficulty: 'high', color: '#f97316' },
+    { id: 'disinformation', name: 'Desinformação', emoji: '🛡️', description: 'Gestão de campanhas de informação falsa', difficulty: 'high', color: '#dc2626' },
+    { id: 'deepfake', name: 'Detecção de Deepfake', emoji: '🔍', description: 'Identificação de conteúdo manipulado', difficulty: 'high', color: '#7c3aed' },
+    { id: 'civil', name: 'Engajamento Civil', emoji: '🤝', description: 'Interação com populações pós-conflito', difficulty: 'medium', color: '#059669' },
+    { id: 'coastal', name: 'Engajamento Costeiro', emoji: '🏖️', description: 'Trabalho com comunidades marítimas', difficulty: 'medium', color: '#0891b2' },
+    { id: 'deterrence', name: 'Mensagens de Dissuasão', emoji: '📢', description: 'Desenvolvimento de comunicação estratégica', difficulty: 'medium', color: '#ea580c' },
+    { id: 'infrastructure', name: 'Priorização de Infraestrutura', emoji: '🏗️', description: 'Gestão de recursos críticos', difficulty: 'medium', color: '#65a30d' },
+    { id: 'transition', name: 'Transição de Autoridades', emoji: '🔄', description: 'Transferência para governo civil', difficulty: 'low', color: '#7c2d12' }
+  ];
+
+  // Cenários base expandidos
+  const baseScenarios = {
+    crisis: [
+      {
+        id: 'cyber_attack',
+        title: 'Ataque Cibernético Massivo',
+        description: 'Infraestrutura crítica nacional sob ataque coordenado. Sistemas bancários, energia e comunicações comprometidos.',
+        context: 'Às 03:00, múltiplos sistemas críticos começaram a falhar simultaneamente. Evidências apontam para um ataque coordenado por atores estatais. A população está começando a entrar em pânico.',
+        timeLimit: 180,
+        stakeholders: ['Governo Federal', 'Setor Privado', 'População Civil', 'Forças Armadas', 'Agências de Inteligência', 'Mídia'],
+        difficulty: 'high',
+        options: [
+          {
+            id: 'immediate_response',
+            text: 'Ativação imediata do protocolo de emergência nacional com transparência total',
+            consequences: {
+              short: 'Resposta rápida, mas possível pânico público generalizado',
+              medium: 'Sistemas parcialmente restaurados, economia severamente impactada',
+              long: 'Fortalecimento da cibersegurança nacional e maior confiança pública'
+            },
+            scores: { political: 70, economic: 40, social: 50, military: 90, international: 60 }
+          },
+          {
+            id: 'covert_response',
+            text: 'Resposta silenciosa com contra-ataque cibernético enquanto minimiza divulgação',
+            consequences: {
+              short: 'Ataques continuam, mas preparação de resposta em segredo',
+              medium: 'Contra-ataque efetivo, mas escalada internacional possível',
+              long: 'Estabelecimento de nova doutrina cibernética, possível perda de confiança'
+            },
+            scores: { political: 60, economic: 60, social: 40, military: 80, international: 30 }
+          },
+          {
+            id: 'diplomatic_approach',
+            text: 'Buscar canais diplomáticos para cessar-fogo cibernético imediato',
+            consequences: {
+              short: 'Ataques podem continuar durante negociações prolongadas',
+              medium: 'Possível acordo, mas vulnerabilidade demonstrada publicamente',
+              long: 'Precedente para resolução pacífica de conflitos cibernéticos'
+            },
+            scores: { political: 50, economic: 70, social: 60, military: 30, international: 90 }
+          }
+        ]
+      }
+    ],
+    diplomacy: [
+      {
+        id: 'border_dispute',
+        title: 'Crise Fronteiriça Complexa',
+        description: 'Tensão crescente em fronteira disputada com mobilização militar de ambos os lados e primeiras baixas relatadas.',
+        context: 'Incidente fronteiriço escalou para confronto direto com baixas de ambos os lados. Comunidade internacional pressiona por solução imediata. Mídia internacional monitora 24/7.',
+        timeLimit: 300,
+        stakeholders: ['País Vizinho', 'ONU', 'População Local', 'Forças Armadas', 'Mídia Internacional', 'Refugiados'],
+        difficulty: 'high',
+        options: [
+          {
+            id: 'mediation_request',
+            text: 'Solicitar mediação internacional imediata através da ONU',
+            consequences: {
+              short: 'Pausa temporária nas hostilidades, perda de controle sobre processo',
+              medium: 'Negociações longas com pressão internacional constante',
+              long: 'Solução duradoura, mas possíveis concessões territoriais significativas'
+            },
+            scores: { political: 60, economic: 50, social: 70, military: 40, international: 90 }
+          },
+          {
+            id: 'bilateral_talks',
+            text: 'Propor negociações bilaterais diretas em território neutro',
+            consequences: {
+              short: 'Controle do processo, mas hostilidades podem continuar',
+              medium: 'Progresso lento, flexibilidade nas soluções possíveis',
+              long: 'Acordo bilateral forte ou escalada definitiva do conflito'
+            },
+            scores: { political: 80, economic: 60, social: 50, military: 60, international: 60 }
+          },
+          {
+            id: 'show_of_force',
+            text: 'Demonstração de força com reforços militares e ultimato',
+            consequences: {
+              short: 'Escalada imediata, mas posição de força para negociação',
+              medium: 'Possível recuo do adversário ou conflito militar maior',
+              long: 'Vitória militar decisiva ou guerra prolongada devastadora'
+            },
+            scores: { political: 40, economic: 30, social: 40, military: 90, international: 20 }
+          }
+        ]
+      }
+    ]
+  };
+
+  // Sistema de IA avançado
+  const AIAnalyzer = {
+    analyzeDecision: (decision, userHistory, scenario) => {
+      const patterns = AIAnalyzer.identifyPatterns(userHistory);
+      const contextualAnalysis = AIAnalyzer.analyzeContext(decision, scenario);
+      const riskAssessment = AIAnalyzer.assessRisk(decision, scenario);
+      
+      return {
+        decisionStyle: patterns.style,
+        confidence: patterns.confidence,
+        strengthAreas: patterns.strengths,
+        improvementAreas: patterns.weaknesses,
+        recommendation: AIAnalyzer.generateRecommendation(decision, patterns),
+        riskLevel: riskAssessment.level,
+        contextualInsights: contextualAnalysis,
+        alternativeSuggestions: AIAnalyzer.suggestAlternatives(decision, scenario),
+        leadershipQualities: AIAnalyzer.assessLeadershipQualities(decision, userHistory),
+        futureScenarioHints: AIAnalyzer.generateFutureHints(decision, patterns)
+      };
+    },
+
+    identifyPatterns: (history) => {
+      if (!history || history.length === 0) return { style: 'new_user', confidence: 0, strengths: [], weaknesses: [] };
+      
+      const scores = history.map(d => d.scores);
+      const avgScores = {
+        political: scores.reduce((sum, s) => sum + s.political, 0) / scores.length,
+        economic: scores.reduce((sum, s) => sum + s.economic, 0) / scores.length,
+        social: scores.reduce((sum, s) => sum + s.social, 0) / scores.length,
+        military: scores.reduce((sum, s) => sum + s.military, 0) / scores.length,
+        international: scores.reduce((sum, s) => sum + s.international, 0) / scores.length
+      };
+
+      // Análise de estilo mais sofisticada
+      const styleScores = {
+        aggressive: avgScores.military * 1.3 + avgScores.political * 0.8,
+        diplomatic: avgScores.international * 1.4 + avgScores.social * 1.1,
+        pragmatic: avgScores.economic * 1.3 + avgScores.political * 0.9,
+        balanced: 100 - (Math.max(...Object.values(avgScores)) - Math.min(...Object.values(avgScores))),
+        cautious: (100 - AIAnalyzer.calculateRiskTolerance(history)) + AIAnalyzer.calculateConsistency(history),
+        innovative: AIAnalyzer.calculateRiskTolerance(history) + AIAnalyzer.calculateAdaptability(history)
+      };
+
+      const dominantStyle = Object.entries(styleScores).reduce((a, b) => styleScores[a[0]] > styleScores[b[0]] ? a : b)[0];
+      const confidence = Math.min(95, Math.max(60, styleScores[dominantStyle] / 10));
+
+      return {
+        style: dominantStyle,
+        confidence: Math.round(confidence),
+        strengths: Object.entries(avgScores).filter(([_, score]) => score > 70).map(([area, _]) => area),
+        weaknesses: Object.entries(avgScores).filter(([_, score]) => score < 50).map(([area, _]) => area),
+        evolution: AIAnalyzer.analyzeEvolution(history),
+        consistency: AIAnalyzer.calculateConsistency(history),
+        adaptability: AIAnalyzer.calculateAdaptability(history)
+      };
+    },
+
+    generateRecommendation: (decision, patterns) => {
+      const recommendations = {
+        aggressive: "Seu estilo assertivo é uma força, mas considere equilibrar com mais diplomacia para resultados duradouros.",
+        diplomatic: "Sua abordagem diplomática é valiosa. Desenvolva também a capacidade de tomar decisões rápidas quando necessário.",
+        pragmatic: "Excelente foco em resultados práticos. Considere também os impactos sociais e humanos de suas decisões.",
+        balanced: "Seu perfil equilibrado é ideal para liderança. Continue desenvolvendo especialização em áreas específicas.",
+        cautious: "Sua cautela evita erros, mas pode limitar oportunidades. Pratique assumir riscos calculados.",
+        innovative: "Sua disposição para inovar é valiosa. Balance com análise cuidadosa para maximizar o sucesso.",
+        new_user: "Continue explorando diferentes abordagens para descobrir seu estilo natural de liderança."
+      };
+      return recommendations[patterns.style] || "Continue desenvolvendo suas habilidades de tomada de decisão.";
+    },
+
+    assessRisk: (decision, scenario) => {
+      const scores = Object.values(decision.scores);
+      const variance = AIAnalyzer.calculateVariance(scores);
+      const minScore = Math.min(...scores);
+      
+      // Fatores contextuais de risco
+      const contextualRisk = 
+        (scenario.timeLimit < 180 ? 20 : 0) +
+        (scenario.stakeholders.length > 5 ? 15 : 0) +
+        (scenario.difficulty === 'high' ? 25 : scenario.difficulty === 'medium' ? 10 : 0);
+      
+      const totalRisk = variance + (100 - minScore) + contextualRisk;
+      
+      let level;
+      if (totalRisk < 40) level = 'low';
+      else if (totalRisk < 70) level = 'medium';
+      else level = 'high';
+
+      return {
+        level,
+        score: Math.min(100, Math.round(totalRisk)),
+        factors: {
+          scoreVariance: variance,
+          worstCaseImpact: 100 - minScore,
+          contextualFactors: contextualRisk
+        }
+      };
+    },
+
+    assessLeadershipQualities: (decision, history) => {
+      const qualities = {
+        vision: AIAnalyzer.assessVisionFromDecision(decision),
+        adaptability: history.length > 3 ? AIAnalyzer.calculateAdaptability(history) : 50,
+        decisiveness: AIAnalyzer.assessDecisiveness(decision),
+        empathy: decision.scores.social * 1.2,
+        integrity: AIAnalyzer.assessIntegrity(decision, history),
+        communication: (decision.scores.political + decision.scores.international) / 2,
+        resilience: AIAnalyzer.assessResilience(history),
+        innovation: AIAnalyzer.assessInnovation(decision, history)
+      };
+
+      return {
+        overall: Math.round(Object.values(qualities).reduce((sum, score) => sum + score, 0) / Object.keys(qualities).length),
+        breakdown: Object.fromEntries(Object.entries(qualities).map(([key, value]) => [key, Math.round(value)])),
+        topStrengths: Object.entries(qualities).sort(([,a], [,b]) => b - a).slice(0, 3),
+        developmentAreas: Object.entries(qualities).sort(([,a], [,b]) => a - b).slice(0, 2)
+      };
+    },
+
+    calculateVariance: (numbers) => {
+      const mean = numbers.reduce((sum, num) => sum + num, 0) / numbers.length;
+      const variance = numbers.reduce((sum, num) => sum + Math.pow(num - mean, 2), 0) / numbers.length;
+      return Math.sqrt(variance);
+    },
+
+    calculateConsistency: (history) => {
+      if (history.length < 2) return 50;
+      
+      const scoreVariations = [];
+      for (let i = 1; i < history.length; i++) {
+        const prev = history[i-1].scores;
+        const curr = history[i].scores;
+        const variation = Object.keys(prev).reduce((sum, key) => sum + Math.abs(prev[key] - curr[key]), 0) / 5;
+        scoreVariations.push(variation);
+      }
+      
+      const avgVariation = scoreVariations.reduce((sum, v) => sum + v, 0) / scoreVariations.length;
+      return Math.max(0, 100 - avgVariation);
+    },
+
+    calculateAdaptability: (history) => {
+      if (history.length < 3) return 50;
+      
+      // Medir capacidade de ajustar estratégia baseado em resultados
+      const improvements = [];
+      for (let i = 2; i < history.length; i++) {
+        const recent = history.slice(i-2, i+1);
+        const trend = recent.map(d => Object.values(d.scores).reduce((sum, s) => sum + s, 0) / 5);
+        const improvement = trend[2] - trend[0];
+        improvements.push(improvement);
+      }
+      
+      const avgImprovement = improvements.reduce((sum, imp) => sum + imp, 0) / improvements.length;
+      return Math.min(100, Math.max(0, 50 + avgImprovement));
+    },
+
+    // Métodos auxiliares simplificados
+    analyzeContext: (decision, scenario) => `Decisão tomada em cenário ${scenario.difficulty} com ${scenario.stakeholders.length} stakeholders.`,
+    suggestAlternatives: (decision, scenario) => scenario.options.filter(opt => opt.id !== decision.id).slice(0, 2),
+    generateFutureHints: (decision, patterns) => [`Próximos cenários podem testar sua ${patterns.weaknesses[0] || 'adaptabilidade'}.`],
+    assessVisionFromDecision: (decision) => (decision.scores.political + decision.scores.international) / 2,
+    assessDecisiveness: (decision) => Math.max(...Object.values(decision.scores)),
+    assessIntegrity: (decision, history) => history.length > 0 ? AIAnalyzer.calculateConsistency(history) : decision.scores.social,
+    assessResilience: (history) => history.length > 5 ? Math.min(100, history.length * 10) : 50,
+    assessInnovation: (decision, history) => AIAnalyzer.calculateRiskTolerance(history),
+    calculateRiskTolerance: (history) => {
+      if (history.length === 0) return 50;
+      const riskScores = history.map(d => Math.max(...Object.values(d.scores)) - Math.min(...Object.values(d.scores)));
+      return riskScores.reduce((sum, r) => sum + r, 0) / riskScores.length;
+    },
+    analyzeEvolution: (history) => {
+      if (history.length < 3) return 'insufficient_data';
+      const recent = history.slice(-3);
+      const older = history.slice(0, -3);
+      if (older.length === 0) return 'early_stage';
+      const recentAvg = recent.reduce((sum, d) => sum + Object.values(d.scores).reduce((s, sc) => s + sc, 0) / 5, 0) / recent.length;
+      const olderAvg = older.reduce((sum, d) => sum + Object.values(d.scores).reduce((s, sc) => s + sc, 0) / 5, 0) / older.length;
+      return recentAvg > olderAvg + 5 ? 'improving' : recentAvg < olderAvg - 5 ? 'declining' : 'stable';
+    }
+  };
+
+  // Sistema de geração adaptativa de cenários
+  const ScenarioGenerator = {
+    generateAdaptiveScenario: (previousDecisions, userProfile) => {
+      if (previousDecisions.length === 0) return baseScenarios.crisis[0];
+      
+      const lastDecision = previousDecisions[previousDecisions.length - 1];
+      const userWeaknesses = AIAnalyzer.identifyPatterns(previousDecisions).weaknesses;
+      
+      return {
+        id: `adaptive_${Date.now()}`,
+        title: `Consequências de ${lastDecision.scenarioTitle || 'Decisões Anteriores'}`,
+        description: ScenarioGenerator.generateAdaptiveDescription(lastDecision, userWeaknesses),
+        context: 'Suas decisões anteriores geraram novos desafios que testam suas áreas de desenvolvimento...',
+        timeLimit: Math.max(120, 300 - (previousDecisions.length * 15)),
+        stakeholders: ScenarioGenerator.generateAdaptiveStakeholders(lastDecision),
+        difficulty: userWeaknesses.length > 2 ? 'high' : 'medium',
+        options: ScenarioGenerator.generateAdaptiveOptions(lastDecision, userWeaknesses)
+      };
+    },
+
+    generateAdaptiveDescription: (lastDecision, weaknesses) => {
+      const weaknessDescriptions = {
+        political: 'A situação política se complicou devido às repercussões de decisões anteriores.',
+        economic: 'Os impactos econômicos das ações passadas agora exigem medidas urgentes.',
+        social: 'A população está reagindo às consequências sociais de políticas implementadas.',
+        military: 'A segurança nacional foi comprometida, exigindo resposta estratégica imediata.',
+        international: 'A comunidade internacional está questionando as decisões tomadas.'
+      };
+      
+      const primaryWeakness = weaknesses[0] || 'political';
+      return weaknessDescriptions[primaryWeakness] || 'Uma nova situação complexa emergiu.';
+    },
+
+    generateAdaptiveStakeholders: (lastDecision) => {
+      const baseStakeholders = ['Governo', 'População', 'Mídia'];
+      const additionalStakeholders = {
+        high_political: ['Oposição', 'Partidos Políticos'],
+        high_economic: ['Setor Privado', 'Sindicatos'],
+        high_social: ['ONGs', 'Grupos Comunitários'],
+        high_military: ['Forças Armadas', 'Veteranos'],
+        high_international: ['ONU', 'Países Aliados']
+      };
+      
+      // Adicionar stakeholders baseado nos scores da decisão anterior
+      const maxScore = Math.max(...Object.values(lastDecision.scores));
+      const maxArea = Object.entries(lastDecision.scores).find(([area, score]) => score === maxScore)[0];
+      
+      return [...baseStakeholders, ...(additionalStakeholders[`high_${maxArea}`] || [])];
+    },
+
+    generateAdaptiveOptions: (lastDecision, weaknesses) => {
+      const baseOptions = [
+        {
+          id: 'damage_control',
+          text: 'Implementar estratégia de controle de danos e estabilização',
+          consequences: {
+            short: 'Estabilização temporária da situação',
+            medium: 'Recuperação gradual da confiança pública',
+            long: 'Base sólida para futuras decisões estratégicas'
+          },
+          scores: { political: 65, economic: 70, social: 60, military: 55, international: 65 }
+        },
+        {
+          id: 'double_down',
+          text: 'Reforçar e expandir a estratégia anterior',
+          consequences: {
+            short: 'Intensificação dos resultados anteriores',
+            medium: 'Polarização ou consolidação definitiva',
+            long: 'Sucesso completo ou falha catastrófica'
+          },
+          scores: { political: 45, economic: 50, social: 40, military: 80, international: 35 }
+        }
+      ];
+
+      // Adicionar opção específica para área fraca
+      if (weaknesses.length > 0) {
+        const weakArea = weaknesses[0];
+        const strengthenOptions = {
+          political: {
+            id: 'political_focus',
+            text: 'Lançar iniciativa de fortalecimento político e consenso',
+            consequences: {
+              short: 'Melhoria nas relações políticas',
+              medium: 'Maior estabilidade governamental',
+              long: 'Fortalecimento duradouro da governança'
+            },
+            scores: { political: 85, economic: 55, social: 65, military: 45, international: 60 }
+          },
+          economic: {
+            id: 'economic_focus',
+            text: 'Implementar plano econômico emergencial abrangente',
+            consequences: {
+              short: 'Injeção de recursos na economia',
+              medium: 'Estabilização dos indicadores econômicos',
+              long: 'Crescimento econômico sustentável'
+            },
+            scores: { political: 55, economic: 90, social: 60, military: 45, international: 55 }
+          },
+          social: {
+            id: 'social_focus',
+            text: 'Lançar programa de engajamento social e comunicação',
+            consequences: {
+              short: 'Melhoria na percepção pública',
+              medium: 'Maior coesão social',
+              long: 'Fortalecimento do tecido social'
+            },
+            scores: { political: 60, economic: 50, social: 90, military: 40, international: 65 }
+          }
+        };
+
+        if (strengthenOptions[weakArea]) {
+          baseOptions.push(strengthenOptions[weakArea]);
+        }
+      }
+
+      return baseOptions;
+    }
+  };
+
+  // Sistema de conquistas
+  const AchievementSystem = {
+    checkAchievements: (decision, results, gameState) => {
+      const newAchievements = [];
+      const totalScore = Object.values(decision.scores).reduce((sum, score) => sum + score, 0) / 5;
+      
+      // Conquista: Primeira decisão
+      if (gameState.decisions.length === 0) {
+        newAchievements.push({
+          id: 'first_decision',
+          title: 'Primeira Decisão',
+          description: 'Tomou sua primeira decisão estratégica',
+          icon: 'star',
+          rarity: 'common',
+          timestamp: new Date()
+        });
+      }
+      
+      // Conquista: Pontuação alta
+      if (totalScore >= 85) {
+        newAchievements.push({
+          id: 'high_performer',
+          title: 'Alto Desempenho',
+          description: 'Alcançou pontuação superior a 85%',
+          icon: 'trophy',
+          rarity: 'rare',
+          timestamp: new Date()
+        });
+      }
+      
+      // Conquista: Especialista em área
+      Object.entries(decision.scores).forEach(([area, score]) => {
+        if (score >= 90) {
+          newAchievements.push({
+            id: `expert_${area}`,
+            title: `Expert em ${area.charAt(0).toUpperCase() + area.slice(1)}`,
+            description: `Demonstrou domínio excepcional na área ${area}`,
+            icon: 'certificate',
+            rarity: 'epic',
+            timestamp: new Date()
+          });
+        }
+      });
+      
+      //
