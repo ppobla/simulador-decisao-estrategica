@@ -317,7 +317,7 @@ const AdvancedStrategicSimulator = () => {
     if (!showTutorial) return null;
 
     return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center tutorial-overlay">
+      <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
         <div className="bg-white rounded-lg p-6 max-w-md mx-4">
           <h3 className="text-xl font-bold mb-4">{tutorialSteps[tutorialStep].title}</h3>
           <p className="mb-6">{tutorialSteps[tutorialStep].content}</p>
@@ -357,7 +357,7 @@ const AdvancedStrategicSimulator = () => {
     if (!results) return null;
 
     return (
-      <div className="mt-8 space-y-6 analysis-chart">
+      <div className="mt-8 space-y-6">
         <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-6 rounded-lg">
           <h3 className="text-xl font-bold mb-4 flex items-center">
             <Brain className="mr-2" /> Análise com IA
@@ -372,7 +372,7 @@ const AdvancedStrategicSimulator = () => {
                     <span className="w-20 text-sm capitalize">{area}:</span>
                     <div className="flex-1 bg-gray-200 rounded-full h-2 mx-2">
                       <div 
-                        className={`h-2 rounded-full progress-bar ${score >= 70 ? 'bg-green-500' : score >= 50 ? 'bg-yellow-500' : 'bg-red-500'}`}
+                        className={`h-2 rounded-full ${score >= 70 ? 'bg-green-500' : score >= 50 ? 'bg-yellow-500' : 'bg-red-500'}`}
                         style={{ width: `${score}%` }}
                       />
                     </div>
@@ -521,7 +521,7 @@ const AdvancedStrategicSimulator = () => {
                   <select 
                     value={gameMode} 
                     onChange={(e) => setGameMode(e.target.value)}
-                    className="w-full p-2 border rounded-lg focus-visible:focus"
+                    className="w-full p-2 border rounded-lg"
                   >
                     <option value="single">Simulação Individual</option>
                     <option value="campaign">Campanha Conectada</option>
@@ -534,7 +534,7 @@ const AdvancedStrategicSimulator = () => {
                   <select 
                     value={difficultyLevel} 
                     onChange={(e) => setDifficultyLevel(e.target.value)}
-                    className="w-full p-2 border rounded-lg focus-visible:focus"
+                    className="w-full p-2 border rounded-lg"
                   >
                     <option value="beginner">Iniciante</option>
                     <option value="intermediate">Intermediário</option>
@@ -547,7 +547,7 @@ const AdvancedStrategicSimulator = () => {
                   <div className="flex space-x-2">
                     <button 
                       onClick={saveSystem.saveProgress}
-                      className="flex-1 bg-green-500 text-white p-2 rounded-lg text-sm flex items-center justify-center hover:bg-green-600 transition-colors focus-visible:focus"
+                      className="flex-1 bg-green-500 text-white p-2 rounded-lg text-sm flex items-center justify-center hover:bg-green-600 transition-colors"
                     >
                       <Save className="w-4 h-4 mr-1" /> Salvar
                     </button>
@@ -595,7 +595,7 @@ const AdvancedStrategicSimulator = () => {
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
                         <span className="text-sm">Sessão: {collaborativeSession.sessionId}</span>
-                        <span className="text-sm text-green-600 collaborative-indicator">● Ativo</span>
+                        <span className="text-sm text-green-600">● Ativo</span>
                       </div>
                       <div className="flex space-x-2">
                         {collaborativeSession.participants.map(p => (
@@ -608,7 +608,7 @@ const AdvancedStrategicSimulator = () => {
                   ) : (
                     <button 
                       onClick={() => collaborativeSystem.createSession(currentScenario?.id)}
-                      className="bg-blue-500 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-600 transition-colors focus-visible:focus"
+                      className="bg-blue-500 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-600 transition-colors"
                     >
                       Criar Sessão Colaborativa
                     </button>
@@ -639,7 +639,7 @@ const AdvancedStrategicSimulator = () => {
                   <button
                     key={type.id}
                     onClick={() => startNewSimulation(type.id)}
-                    className={`p-4 rounded-lg border-2 transition-all text-left relative simulation-card focus-visible:focus ${
+                    className={`p-4 rounded-lg border-2 transition-all text-left relative ${
                       difficultyLevel !== 'advanced' && type.difficulty === 'high' 
                         ? 'border-gray-200 bg-gray-50 opacity-50 cursor-not-allowed'
                         : 'border-gray-200 hover:border-blue-300 hover:shadow-lg'
@@ -717,15 +717,12 @@ const AdvancedStrategicSimulator = () => {
                     {currentScenario.options.map((option, index) => (
                       <div
                         key={option.id}
-                        className={`border-2 rounded-lg p-4 cursor-pointer transition-all decision-option focus-visible:focus ${
+                        className={`border-2 rounded-lg p-4 cursor-pointer transition-all ${
                           selectedDecision?.id === option.id
-                            ? 'border-blue-500 bg-blue-50 selected'
+                            ? 'border-blue-500 bg-blue-50'
                             : 'border-gray-200 hover:border-gray-300'
                         }`}
                         onClick={() => executeDecision(option)}
-                        role="button"
-                        tabIndex="0"
-                        onKeyDown={(e) => e.key === 'Enter' && executeDecision(option)}
                       >
                         <div className="flex items-start justify-between">
                           <div className="flex-1">
@@ -777,7 +774,7 @@ const AdvancedStrategicSimulator = () => {
                     </p>
                     <button 
                       onClick={() => startNewSimulation(currentScenario.id)}
-                      className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:from-blue-600 hover:to-purple-700 transition-all focus-visible:focus"
+                      className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:from-blue-600 hover:to-purple-700 transition-all"
                     >
                       Continuar Campanha
                     </button>
@@ -892,7 +889,7 @@ const AdvancedStrategicSimulator = () => {
                       <p className="text-sm text-gray-600">
                         Exemplo clássico de tomada de decisão sob pressão extrema e risco nuclear.
                       </p>
-                      <button className="text-blue-600 text-sm hover:underline mt-1 focus-visible:focus">
+                      <button className="text-blue-600 text-sm hover:underline mt-1">
                         Estudar caso →
                       </button>
                     </div>
@@ -901,7 +898,7 @@ const AdvancedStrategicSimulator = () => {
                       <p className="text-sm text-gray-600">
                         Coordenação internacional e uso de tecnologia militar avançada.
                       </p>
-                      <button className="text-blue-600 text-sm hover:underline mt-1 focus-visible:focus">
+                      <button className="text-blue-600 text-sm hover:underline mt-1">
                         Estudar caso →
                       </button>
                     </div>
@@ -910,7 +907,7 @@ const AdvancedStrategicSimulator = () => {
                       <p className="text-sm text-gray-600">
                         Gestão de crise nacional e mudanças na política de segurança.
                       </p>
-                      <button className="text-blue-600 text-sm hover:underline mt-1 focus-visible:focus">
+                      <button className="text-blue-600 text-sm hover:underline mt-1">
                         Estudar caso →
                       </button>
                     </div>
@@ -945,7 +942,7 @@ const AdvancedStrategicSimulator = () => {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <button 
                     onClick={() => setShowTutorial(true)}
-                    className="p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-400 transition-colors focus-visible:focus"
+                    className="p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-400 transition-colors"
                   >
                     <div className="text-center">
                       <Play className="mx-auto mb-2" />
@@ -953,14 +950,14 @@ const AdvancedStrategicSimulator = () => {
                       <p className="text-sm text-gray-600">Aprenda a usar todas as funcionalidades</p>
                     </div>
                   </button>
-                  <button className="p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-400 transition-colors focus-visible:focus">
+                  <button className="p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-400 transition-colors">
                     <div className="text-center">
                       <Target className="mx-auto mb-2" />
                       <h4 className="font-medium">Tomada de Decisão Estratégica</h4>
                       <p className="text-sm text-gray-600">Princípios fundamentais</p>
                     </div>
                   </button>
-                  <button className="p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-400 transition-colors focus-visible:focus">
+                  <button className="p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-400 transition-colors">
                     <div className="text-center">
                       <Users className="mx-auto mb-2" />
                       <h4 className="font-medium">Liderança em Crise</h4>
@@ -990,7 +987,7 @@ const AdvancedStrategicSimulator = () => {
                     <input 
                       type="text" 
                       placeholder="Ex: Crise Diplomática Regional"
-                      className="w-full p-3 border rounded-lg focus-visible:focus"
+                      className="w-full p-3 border rounded-lg"
                     />
                   </div>
                   
@@ -998,8 +995,161 @@ const AdvancedStrategicSimulator = () => {
                     <label className="block text-sm font-medium mb-2">Descrição</label>
                     <textarea 
                       placeholder="Descreva a situação inicial..."
-                      className="w-full p-3 border rounded-lg h-24 focus-visible:focus"
+                      className="w-full p-3 border rounded-lg h-24"
                     />
                   </div>
                   
                   <div>
+                    <label className="block text-sm font-medium mb-2">Contexto Detalhado</label>
+                    <textarea 
+                      placeholder="Informações adicionais e background..."
+                      className="w-full p-3 border rounded-lg h-32"
+                    />
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Categoria</label>
+                      <select className="w-full p-3 border rounded-lg">
+                        <option value="">Selecione uma categoria</option>
+                        {simulationTypes.map(type => (
+                          <option key={type.id} value={type.id}>{type.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Tempo Limite (segundos)</label>
+                      <input 
+                        type="number" 
+                        placeholder="300"
+                        className="w-full p-3 border rounded-lg"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Stakeholders (separados por vírgula)</label>
+                    <input 
+                      type="text" 
+                      placeholder="Governo, Oposição, Mídia, População Civil"
+                      className="w-full p-3 border rounded-lg"
+                    />
+                  </div>
+                  
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <h4 className="font-medium mb-3">Opções de Decisão</h4>
+                    <div className="space-y-4">
+                      {[1, 2, 3].map(num => (
+                        <div key={num} className="bg-white p-4 rounded border">
+                          <h5 className="font-medium mb-2">Opção {num}</h5>
+                          <input 
+                            type="text" 
+                            placeholder="Texto da opção..."
+                            className="w-full p-2 border rounded mb-2"
+                          />
+                          <div className="grid grid-cols-3 gap-2">
+                            <input 
+                              type="text" 
+                              placeholder="Consequência curto prazo"
+                              className="p-2 border rounded text-sm"
+                            />
+                            <input 
+                              type="text" 
+                              placeholder="Consequência médio prazo"
+                              className="p-2 border rounded text-sm"
+                            />
+                            <input 
+                              type="text" 
+                              placeholder="Consequência longo prazo"
+                              className="p-2 border rounded text-sm"
+                            />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  <div className="flex space-x-4">
+                    <button className="bg-blue-500 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-600 transition-colors">
+                      Salvar Cenário
+                    </button>
+                    <button className="bg-green-500 text-white px-6 py-3 rounded-lg font-medium hover:bg-green-600 transition-colors">
+                      Testar Cenário
+                    </button>
+                  </div>
+                </div>
+              </div>
+              
+              {customScenarios.length > 0 && (
+                <div className="bg-white p-6 rounded-lg mt-6">
+                  <h3 className="text-xl font-semibold mb-4">Seus Cenários</h3>
+                  <div className="space-y-3">
+                    {customScenarios.map((scenario, index) => (
+                      <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
+                        <div>
+                          <h4 className="font-medium">{scenario.title}</h4>
+                          <p className="text-sm text-gray-600">{scenario.description}</p>
+                        </div>
+                        <div className="flex space-x-2">
+                          <button className="text-blue-600 hover:underline text-sm">Editar</button>
+                          <button className="text-green-600 hover:underline text-sm">Jogar</button>
+                          <button className="text-red-600 hover:underline text-sm">Excluir</button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        );
+
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <div className="max-w-7xl mx-auto p-6 bg-gray-50 min-h-screen">
+      <TutorialSystem />
+      
+      <div className="text-center mb-8">
+        <h1 className="text-4xl font-bold text-gray-800 mb-2 flex items-center justify-center">
+          <Target className="mr-3" /> Simulador de Decisão Estratégica Avançado
+        </h1>
+        <p className="text-gray-600 max-w-3xl mx-auto">
+          Plataforma completa com IA adaptativa, análise avançada, modo colaborativo e sistema educacional integrado
+        </p>
+      </div>
+
+      <div className="mb-8">
+        <div className="flex flex-wrap justify-center gap-2">
+          {[
+            { id: 'simulator', label: 'Simulador', icon: Play },
+            { id: 'analytics', label: 'Análise', icon: BarChart3 },
+            { id: 'education', label: 'Educação', icon: BookOpen },
+            { id: 'custom', label: 'Personalizar', icon: Settings }
+          ].map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`flex items-center px-4 py-2 rounded-lg transition-all ${
+                activeTab === tab.id
+                  ? 'bg-blue-600 text-white shadow-lg'
+                  : 'bg-white text-gray-600 hover:bg-gray-100'
+              }`}
+            >
+              <tab.icon className="w-4 h-4 mr-2" />
+              {tab.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {renderMainContent()}
+    </div>
+  );
+};
+
+export default AdvancedStrategicSimulator;
